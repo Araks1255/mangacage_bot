@@ -77,7 +77,7 @@ func (h VerifyPasswordChangingHandler) TransitionFn(ctx context.Context, update 
 		hash, err := utils.GenerateHashPassword(data.user.NewPassword)
 		if err != nil {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Не удалось сгенерировать хэш для нового пароля")
-			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
+			msg.ReplyMarkup = keyboards.Main
 			return fsm.Transition{
 				State: fsm.UndefinedState,
 				MessageConfig: fsm.MessageConfig{
@@ -89,7 +89,7 @@ func (h VerifyPasswordChangingHandler) TransitionFn(ctx context.Context, update 
 		if result := _db.Exec("UPDATE users SET password = ? WHERE user_name = ?", hash, data.user.UserName); result.RowsAffected == 0 {
 			log.Println(result.Error)
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Не удалось обновить пароль")
-			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
+			msg.ReplyMarkup = keyboards.Main
 			return fsm.Transition{
 				State: fsm.UndefinedState,
 				MessageConfig: fsm.MessageConfig{
@@ -99,7 +99,7 @@ func (h VerifyPasswordChangingHandler) TransitionFn(ctx context.Context, update 
 		}
 
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Пароль успешно обновлён")
-		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
+		msg.ReplyMarkup = keyboards.Main
 		return fsm.Transition{
 			State: fsm.UndefinedState,
 			MessageConfig: fsm.MessageConfig{
@@ -109,7 +109,7 @@ func (h VerifyPasswordChangingHandler) TransitionFn(ctx context.Context, update 
 	}
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Ладно")
-	msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
+	msg.ReplyMarkup = keyboards.Main
 	if update.Message.Text == "Нет" {
 		return fsm.Transition{
 			State: fsm.UndefinedState,
