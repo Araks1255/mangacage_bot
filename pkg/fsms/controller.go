@@ -2,11 +2,16 @@ package fsms
 
 import (
 	"context"
+	"log"
+
+	"github.com/Araks1255/mangacage_bot/pkg/keyboards"
 
 	fsm "github.com/Feolius/telegram-bot-fsm"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/gorm"
 )
+
+const MAIN_STATE = "main"
 
 var _db *gorm.DB
 
@@ -21,10 +26,21 @@ type Data struct {
 	user User
 }
 
+type StartCommandHandler struct{}
+
+func (h StartCommandHandler) TransitionFn(ctx context.Context, update *tgbotapi.Update, data Data) (fsm.Transition, Data) {
+	data.user.TgUserID = update.Message.Chat.ID
+	return fsm.StateTransition(MAIN_STATE), data
+}
+
 type MainStateHandler struct{}
 
 func (h MainStateHandler) MessageFn(ctx context.Context, data Data) fsm.MessageConfig {
-	return fsm.TextMessageConfig("Хало")
+	msg := tgbotapi.NewMessage(data.user.TgUserID, "Здравствуйте, вас приветствует официальный бот mangacage! Все функции представлены на клавиатуре внизу\n(чтобы получать уведомления о выходе новых глав и иметь возможность сменить пароль войдите в аккаунт)")
+	msg.ReplyMarkup = keyboards.Main
+	return fsm.MessageConfig{
+		MessageConfig: msg,
+	}
 }
 
 func (h MainStateHandler) TransitionFn(ctx context.Context, update *tgbotapi.Update, data Data) (fsm.Transition, Data) {
@@ -43,12 +59,14 @@ func RegisterFSMs(bot *tgbotapi.BotAPI, db *gorm.DB) {
 	_db = db
 
 	commands := make(map[string]fsm.TransitionProvider[Data])
-	commands["start"] = MainStateHandler{}
+	commands["start"] = StartCommandHandler{}
 	commands["Войти в аккаунт"] = GetUserNameHandler{}
 	commands["Сменить пароль"] = GetNewPasswordHandler{}
 
 	configs := make(map[fsm.State]fsm.StateHandler[Data])
 	configs[fsm.UndefinedState] = MainStateHandler{}
+	configs[MAIN_STATE] = MainStateHandler{}
+
 	configs[GET_USER_NAME_STATE] = GetUserNameHandler{}
 	configs[GET_PASSWORD_STATE] = GetPasswordHandler{}
 
@@ -67,8 +85,7 @@ func RegisterFSMs(bot *tgbotapi.BotAPI, db *gorm.DB) {
 	for update := range updates {
 		err := botFSM.HandleUpdate(ctx, &update)
 		if err != nil {
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Жопа"))
-			panic(err)
+			log.Println(err)
 		}
 	}
 }
