@@ -19,10 +19,10 @@ func main() {
 		panic(err)
 	}
 
-	_db, err := db.Init(dbUrl)
+	db, err := db.Init(dbUrl)
 	if err != nil {
 		panic(err)
 	}
 
-	fsms.RegisterFSMs(bot, _db)
+	fsms.RegisterFSMs(bot, db)
 }
