@@ -27,6 +27,8 @@ func (h MainStateHandler) TransitionFn(ctx context.Context, update *tgbotapi.Upd
 		return fsm.StateTransition(GET_USER_NAME_STATE), Data{}
 	case "Сменить пароль":
 		return fsm.StateTransition(GET_NEW_PASSWORD_STATE), Data{}
+	case "Выйти из аккаунта":
+		return fsm.StateTransition(LOGOUT_VERIFY), Data{}
 	}
 	return fsm.TextTransition("Выберите вариант с клавиатуры"), Data{}
 }

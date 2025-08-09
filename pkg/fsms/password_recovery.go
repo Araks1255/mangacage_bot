@@ -98,5 +98,5 @@ func (h VerifyPasswordChangingHandler) TransitionFn(ctx context.Context, update 
 		return helpers.MainStateTextTransition("Пароль успешно изменен"), Data{}
 	}
 
-	return fsm.TextTransition("Отвечай."), data
+	return fsm.TextTransition("Отвечайте"), data
 }

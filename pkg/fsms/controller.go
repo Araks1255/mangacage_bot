@@ -36,6 +36,8 @@ func RegisterFSMs(bot *tgbotapi.BotAPI, db *gorm.DB) {
 	configs[GET_NEW_PASSWORD_STATE] = NewGetNewPasswordHandler(db)
 	configs[VERIFY_PASSWORD_CHANGING] = NewVerifyPasswordChangingHandler(db)
 
+	configs[LOGOUT_VERIFY] = NewLogoutVerifyHandler(db)
+
 	botFSM := fsm.NewBotFsm(bot, configs, fsm.WithCommands[Data](commands))
 
 	u := tgbotapi.NewUpdate(0)
