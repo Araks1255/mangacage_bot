@@ -75,5 +75,7 @@ func (h GetPasswordHandler) TransitionFn(ctx context.Context, update *tgbotapi.U
 		return helpers.MainStateTextTransition("Не удалось привязать аккаунт"), Data{}
 	}
 
-	return helpers.MainStateTextTransition("Аккаунт успешно привязан"), Data{}
+	return helpers.MainStateTextTransition(
+		"Telegram аккаунт успешно привязан к mangacage аккаунту.\n\nДля получения уведомлений запустите специального бота -\nhttps://t.me/mangacage_notifications_bot",
+	), Data{}
 }
