@@ -16,7 +16,8 @@ type User struct {
 }
 
 type Data struct {
-	user User
+	user                    User
+	messagesWithPasswordIDs []int
 }
 
 func RegisterFSMs(bot *tgbotapi.BotAPI, db *gorm.DB) {
@@ -31,10 +32,10 @@ func RegisterFSMs(bot *tgbotapi.BotAPI, db *gorm.DB) {
 	configs[MAIN_STATE] = MainStateHandler{}
 
 	configs[GET_USER_NAME_STATE] = NewGetUserNameHandler(db)
-	configs[GET_PASSWORD_STATE] = NewGetPasswordHandler(db)
+	configs[GET_PASSWORD_STATE] = NewGetPasswordHandler(db, bot)
 
 	configs[GET_NEW_PASSWORD_STATE] = NewGetNewPasswordHandler(db)
-	configs[VERIFY_PASSWORD_CHANGING] = NewVerifyPasswordChangingHandler(db)
+	configs[VERIFY_PASSWORD_CHANGING] = NewVerifyPasswordChangingHandler(db, bot)
 
 	configs[LOGOUT_VERIFY] = NewLogoutVerifyHandler(db)
 

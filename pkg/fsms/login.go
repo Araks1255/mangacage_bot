@@ -19,10 +19,17 @@ const GET_USER_NAME_STATE = "get-user-name"
 const GET_PASSWORD_STATE = "get-password"
 
 type GetUserNameHandler struct{ DB *gorm.DB }
-type GetPasswordHandler struct{ DB *gorm.DB }
+
+type GetPasswordHandler struct {
+	DB  *gorm.DB
+	bot *tgbotapi.BotAPI
+}
 
 func NewGetUserNameHandler(db *gorm.DB) GetUserNameHandler { return GetUserNameHandler{DB: db} }
-func NewGetPasswordHandler(db *gorm.DB) GetPasswordHandler { return GetPasswordHandler{DB: db} }
+
+func NewGetPasswordHandler(db *gorm.DB, bot *tgbotapi.BotAPI) GetPasswordHandler {
+	return GetPasswordHandler{DB: db, bot: bot}
+}
 
 func (h GetUserNameHandler) MessageFn(ctx context.Context, data Data) fsm.MessageConfig {
 	return fsm.MessageConfig{
@@ -47,11 +54,20 @@ func (h GetPasswordHandler) MessageFn(ctx context.Context, data Data) fsm.Messag
 }
 
 func (h GetPasswordHandler) TransitionFn(ctx context.Context, update *tgbotapi.Update, data Data) (fsm.Transition, Data) {
+	defer func() {
+		for i := 0; i < len(data.messagesWithPasswordIDs); i++ {
+			h.bot.Request(tgbotapi.NewDeleteMessage(update.Message.Chat.ID, data.messagesWithPasswordIDs[i]))
+		}
+		data.messagesWithPasswordIDs = []int{}
+	}()
+
 	if update.Message.Text == "Отмена" {
 		return helpers.MainStateTextTransition("Ладно"), Data{}
 	}
 
 	data.user.Password = update.Message.Text
+
+	data.messagesWithPasswordIDs = append(data.messagesWithPasswordIDs, update.Message.MessageID)
 
 	var existingUserPassword *string
 
